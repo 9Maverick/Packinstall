@@ -16,19 +16,23 @@
 
 The easiest way to install `packinstall` is to use the provided `install.sh` script. This script will download `packinstall` and place it in `/usr/local/bin/` so you can run it from anywhere.
 
-1.  **Open your terminal.**
-2.  **Download and run the installer script:**
+1. **Open your terminal.**
+2. **Download and run the installer script:**
 
     ```bash
-    curl -fsSL https://raw.githubusercontent.com/rainbownx/Packinstall/main/install.sh | bash
+    curl -fsSL https://raw.githubusercontent.com/9Maverick/Packinstall/main/install.sh | bash
     ```
+
     *(Remember to replace `YOUR_GITHUB_USERNAME` with your actual GitHub username!)*
 
-3.  **Verify installation:**
+3. **Verify installation:**
+
     ```bash
     packinstall --version
     ```
+
     Or just try installing a package:
+
     ```bash
     packinstall htop
     ```
