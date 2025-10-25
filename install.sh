@@ -59,11 +59,11 @@ sudo curl \-sSL "$RAW_GITHUB_URL" -o "$TARGET_DIR/$SCRIPT_NAME" || {
 
 # 4. Make the script executable
 log_info "Making $SCRIPT_NAME executable..."
-sudo chmod \+x "/usr/local/bash/$SCRIPT_NAME" || {
+sudo chmod \+x "$TARGET_DIR/$SCRIPT_NAME" || {
   log_error "Failed to set executable permissions on $SCRIPT_NAME."
   exit 1
 }
-log_success "</span>{SCRIPT_NAME} installed successfully to ${TARGET_DIR}!"
+log_success "$SCRIPT_NAME installed successfully to ${TARGET_DIR}!"
 log_info "You can now run it from anywhere by typing: ${SCRIPT_NAME} <package_name>"
 log_info "Example: $SCRIPT_NAME htop"
 
