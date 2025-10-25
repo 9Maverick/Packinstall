@@ -11,110 +11,110 @@ SCRIPT_VERSION="1.0.0"
 # --- Function to display usage information ---
 # This function is called if the script is run without the required arguments.
 usage() {
-    echo "Usage: $0 <package_name>" >&2
-    echo "Installs a package using the appropriate package manager for your Linux distribution." >&2
-    echo "Example: $0 git" >&2
-    exit 1
+  echo "Usage: $0 <package_name>" >&2
+  echo "Installs a package using the appropriate package manager for your Linux distribution." >&2
+  echo "Example: $0 git" >&2
+  exit 1
 }
 
 # --- Function for debug logging ---
 # Prints messages to stderr if DEBUG_MODE is true.
 debug_log() {
-    if [ "$DEBUG_MODE" = "true" ]; then
-        echo "[DEBUG] $@" >&2
-    fi
+  if [ "$DEBUG_MODE" = "true" ]; then
+    echo "[DEBUG] $@" >&2
+  fi
 }
 
 # --- Main Script Logic ---
 
 # 1. Argument Check: Ensure a package name is provided as an argument.
 if [ -z "$1" ]; then
-    usage # Call the usage function and exit if no argument is given.
+  usage # Call the usage function and exit if no argument is given.
 fi
 
-PACKAGE_NAME="$1" # Store the package name provided by the user.
-DISTRO_ID=""      # Will store the ID of the detected distribution (e.g., ubuntu, fedora, arch).
-PM_COMMAND=""     # Will store the package manager command (e.g., apt, dnf, pacman).
+PACKAGE_NAME="$1"        # Store the package name provided by the user.
+DISTRO_ID=""             # Will store the ID of the detected distribution (e.g., ubuntu, fedora, arch).
+PM_COMMAND=""            # Will store the package manager command (e.g., apt, dnf, pacman).
 PM_INSTALL_SUBCOMMAND="" # Will store the subcommand for installation (e.g., install, -S, add).
-PM_INSTALL_OPTIONS="" # Will store installation options (e.g., -y, --noconfirm, --ask).
-PM_UPDATE_COMMAND=""  # Will store the command to update package lists (if needed).
+PM_INSTALL_OPTIONS=""    # Will store installation options (e.g., -y, --noconfirm, --ask).
+PM_UPDATE_COMMAND=""     # Will store the command to update package lists (if needed).
 
 # 2. Distribution Detection: Determine the Linux distribution using /etc/os-release.
 debug_log "Attempting to detect distribution from /etc/os-release..."
 if [ -f /etc/os-release ]; then
-    # Source /etc/os-release to load distribution variables into the current shell environment.
-    # This makes variables like $ID, $NAME, $VERSION_ID available.
-    . /etc/os-release
-    DISTRO_ID=$ID # Get the standardized ID of the distribution.
-    debug_log "Detected distribution ID: '$DISTRO_ID'"
+  # Source /etc/os-release to load distribution variables into the current shell environment.
+  # This makes variables like $ID, $NAME, $VERSION_ID available.
+  . /etc/os-release
+  DISTRO_ID=$ID # Get the standardized ID of the distribution.
+  debug_log "Detected distribution ID: '$DISTRO_ID'"
 
-    # 3. Configure Package Manager based on Distribution ID.
-    case "$DISTRO_ID" in
-        # Debian-based distributions (Debian, Ubuntu, Linux Mint, Pop!_OS)
-        debian|ubuntu|linuxmint|pop)
-            PM_COMMAND="apt"
-            PM_INSTALL_SUBCOMMAND="install"
-            PM_INSTALL_OPTIONS="-y" # Automatically answer 'yes' to prompts.
-            PM_UPDATE_COMMAND="sudo apt update" # Update package lists before installing.
-            ;;
-        # Red Hat-based distributions (Fedora, CentOS, RHEL, AlmaLinux, Rocky Linux)
-        fedora|centos|rhel|almalinux|rocky)
-            # Prioritize dnf if available, otherwise fallback to yum (for older systems).
-            if command -v dnf &> /dev/null; then
-                PM_COMMAND="dnf"
-            elif command -v yum &> /dev/null; then
-                PM_COMMAND="yum"
-            fi
-            PM_INSTALL_SUBCOMMAND="install"
-            PM_INSTALL_OPTIONS="-y" # Automatically answer 'yes'.
-            # DNF/YUM typically handle dependency resolution and don't strictly require a separate 'update' step before install.
-            ;;
-        # Arch Linux-based distributions (Arch, Manjaro, EndeavourOS)
-        arch|manjaro|endeavouros)
-            PM_COMMAND="pacman"
-            PM_INSTALL_SUBCOMMAND="-S" # Install/Sync packages.
-            PM_INSTALL_OPTIONS="--noconfirm" # Skip confirmation prompts.
-            PM_UPDATE_COMMAND="sudo pacman -Sy" # Sync package lists before installing.
-            ;;
-        # OpenSUSE-based distributions
-        opensuse-leap|opensuse-tumbleweed|sles)
-            PM_COMMAND="zypper"
-            PM_INSTALL_SUBCOMMAND="install"
-            PM_INSTALL_OPTIONS="-y" # Automatically answer 'yes'.
-            PM_UPDATE_COMMAND="sudo zypper refresh" # Refresh repositories.
-            ;;
-        # Gentoo Linux
-        gentoo)
-            PM_COMMAND="emerge"
-            PM_INSTALL_SUBCOMMAND="" # emerge takes options and package directly, no 'install' subcommand.
-            PM_INSTALL_OPTIONS="--ask" # Prompts user for confirmation before installing.
-            PM_UPDATE_COMMAND="sudo emerge --sync" # Sync the portage tree.
-            ;;
-        # Alpine Linux
-        alpine)
-            PM_COMMAND="apk"
-            PM_INSTALL_SUBCOMMAND="add" # 'add' is the subcommand for installation.
-            PM_INSTALL_OPTIONS="" # APK doesn't typically use -y for 'add'.
-            PM_UPDATE_COMMAND="sudo apk update" # Update repositories.
-            ;;
-        # Fallback for unsupported distributions
-        *)
-            echo "Error: Unsupported distribution '$DISTRO_ID'." >&2
-            echo "This script does not know how to install packages on your system." >&2
-            exit 1
-            ;;
-    esac
-else
-    echo "Error: '/etc/os-release' not found." >&2
-    echo "This script relies on '/etc/os-release' for accurate distribution detection." >&2
+  # 3. Configure Package Manager based on Distribution ID.
+  case "$DISTRO_ID" in
+  # Debian-based distributions (Debian, Ubuntu, Linux Mint, Pop!_OS)
+  debian | ubuntu | linuxmint | pop)
+    PM_COMMAND="apt"
+    PM_INSTALL_SUBCOMMAND="install"
+    PM_INSTALL_OPTIONS="-y"             # Automatically answer 'yes' to prompts.
+    PM_UPDATE_COMMAND="sudo apt update" # Update package lists before installing.
+    ;;
+  # Red Hat-based distributions (Fedora, CentOS, RHEL, AlmaLinux, Rocky Linux)
+  fedora | centos | rhel | almalinux | rocky)
+    # Prioritize dnf if available, otherwise fallback to yum (for older systems).
+    if command -v dnf &>/dev/null; then
+      PM_COMMAND="dnf"
+    elif command -v yum &>/dev/null; then
+      PM_COMMAND="yum"
+    fi
+    PM_INSTALL_SUBCOMMAND="install"
+    PM_INSTALL_OPTIONS="-y" # Automatically answer 'yes'.
+    # DNF/YUM typically handle dependency resolution and don't strictly require a separate 'update' step before install.
+    ;;
+  # Arch Linux-based distributions (Arch, Manjaro, EndeavourOS)
+  arch | manjaro | endeavouros)
+    PM_COMMAND="pacman"
+    PM_INSTALL_SUBCOMMAND="-S"          # Install/Sync packages.
+    PM_INSTALL_OPTIONS="--noconfirm"    # Skip confirmation prompts.
+    PM_UPDATE_COMMAND="sudo pacman -Sy" # Sync package lists before installing.
+    ;;
+  # OpenSUSE-based distributions
+  opensuse-leap | opensuse-tumbleweed | sles)
+    PM_COMMAND="zypper"
+    PM_INSTALL_SUBCOMMAND="install"
+    PM_INSTALL_OPTIONS="-y"                 # Automatically answer 'yes'.
+    PM_UPDATE_COMMAND="sudo zypper refresh" # Refresh repositories.
+    ;;
+  # Gentoo Linux
+  gentoo)
+    PM_COMMAND="emerge"
+    PM_INSTALL_SUBCOMMAND=""               # emerge takes options and package directly, no 'install' subcommand.
+    PM_INSTALL_OPTIONS="--ask"             # Prompts user for confirmation before installing.
+    PM_UPDATE_COMMAND="sudo emerge --sync" # Sync the portage tree.
+    ;;
+  # Alpine Linux
+  alpine)
+    PM_COMMAND="apk"
+    PM_INSTALL_SUBCOMMAND="add"         # 'add' is the subcommand for installation.
+    PM_INSTALL_OPTIONS=""               # APK doesn't typically use -y for 'add'.
+    PM_UPDATE_COMMAND="sudo apk update" # Update repositories.
+    ;;
+  # Fallback for unsupported distributions
+  *)
+    echo "Error: Unsupported distribution '$DISTRO_ID'." >&2
+    echo "This script does not know how to install packages on your system." >&2
     exit 1
+    ;;
+  esac
+else
+  echo "Error: '/etc/os-release' not found." >&2
+  echo "This script relies on '/etc/os-release' for accurate distribution detection." >&2
+  exit 1
 fi
 
 # 4. Final Package Manager Check: Ensure the detected package manager command exists.
-if [ -z "$PM_COMMAND" ] || ! command -v "$PM_COMMAND" &> /dev/null; then
-    echo "Error: No suitable package manager found or installed for your distribution ('$DISTRO_ID')." >&2
-    echo "Please ensure the correct package manager (e.g., $PM_COMMAND) is installed and in your PATH." >&2
-    exit 1
+if [ -z "$PM_COMMAND" ] || ! command -v "$PM_COMMAND" &>/dev/null; then
+  echo "Error: No suitable package manager found or installed for your distribution ('$DISTRO_ID')." >&2
+  echo "Please ensure the correct package manager (e.g., $PM_COMMAND) is installed and in your PATH." >&2
+  exit 1
 fi
 
 echo "Using package manager: '$PM_COMMAND'"
@@ -122,12 +122,12 @@ echo "Attempting to install: '$PACKAGE_NAME'..."
 
 # 5. Run Update Command (if applicable for the detected package manager).
 if [ -n "$PM_UPDATE_COMMAND" ]; then
-    debug_log "Running update command: '$PM_UPDATE_COMMAND'"
-    echo "Updating package lists..."
-    $PM_UPDATE_COMMAND # Execute the update command.
-    if [ $? -ne 0 ]; then # Check the exit status of the update command.
-        echo "Warning: Package manager update failed. Continuing with installation." >&2
-    fi
+  debug_log "Running update command: '$PM_UPDATE_COMMAND'"
+  echo "Updating package lists..."
+  $PM_UPDATE_COMMAND    # Execute the update command.
+  if [ $? -ne 0 ]; then # Check the exit status of the update command.
+    echo "Warning: Package manager update failed. Continuing with installation." >&2
+  fi
 fi
 
 # 6. Construct and Execute the Installation Command.
@@ -141,10 +141,10 @@ eval "$INSTALL_CMD" # Execute the installation command.
 
 # 7. Check Installation Status.
 if [ $? -eq 0 ]; then # Check the exit status of the installation command.
-    echo "Successfully installed '$PACKAGE_NAME'!"
+  echo "Successfully installed '$PACKAGE_NAME'!"
 else
-    echo "Failed to install '$PACKAGE_NAME'. Please check the error messages above." >&2
-    exit 1
+  echo "Failed to install '$PACKAGE_NAME'. Please check the error messages above." >&2
+  exit 1
 fi
 
 exit 0 # Script completed successfully.
