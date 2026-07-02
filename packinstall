@@ -69,6 +69,12 @@ if [ -f /etc/os-release ]; then
     PM_INSTALL_OPTIONS="-y" # Automatically answer 'yes'.
     # DNF/YUM typically handle dependency resolution and don't strictly require a separate 'update' step before install.
     ;;
+  # Silverblue-based distributions (Bazzite, etc.)
+  bazzite)
+    PM_COMMAND="rpm-ostree"
+    PM_INSTALL_SUBCOMMAND="install"
+    PM_INSTALL_OPTIONS="-y" # Automatically answer 'yes'.
+    ;;
   # Arch Linux-based distributions (Arch, Manjaro, EndeavourOS)
   arch | manjaro | endeavouros)
     PM_COMMAND="pacman"
